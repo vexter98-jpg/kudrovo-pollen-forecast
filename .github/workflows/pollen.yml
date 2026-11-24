@@ -4,35 +4,27 @@ on:
   schedule:
     - cron: '23 11 * * *'
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 concurrency:
-  group: pollen-pages
+  group: pollen-forecast
   cancel-in-progress: false
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/configure-pages@v5
       - run: python -m pip install 'cdsapi>=0.7.7,<0.8'
       - name: Fetch CAMS forecast
         env:
           CAMS_API_TOKEN: ${{ secrets.CAMS_API_TOKEN }}
+        run: python refresh-cams-pollen.py forecast.json
+      - name: Publish public forecast file
         run: |
-          test -n "$CAMS_API_TOKEN" || { echo 'Set the CAMS_API_TOKEN repository secret.'; exit 1; }
-          mkdir -p public
-          python refresh-cams-pollen.py public/forecast.json
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: public
-      - uses: actions/deploy-pages@v4
-        id: deployment
+          git add -- forecast.json
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m 'Update public CAMS forecast'
+          git push
