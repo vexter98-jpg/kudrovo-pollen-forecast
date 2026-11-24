@@ -87,7 +87,7 @@ if (!date || variables.time.attrs.units !== 'hours') throw new Error('Unrecogniz
 const run = new Date(date.slice(1).join('-') + 'T00:00:00Z');
 const cell = {latitude: nearest('latitude', 59.908489), longitude: nearest('longitude', 30.513569), level: 0};
 const localDate = new Intl.DateTimeFormat('sv-SE', {timeZone: 'Europe/Moscow'});
-const series = {birch: 'bpg_conc', grass: 'gpg_conc', mugwort: 'mpg_conc'};
+const series = {birch: 'bpg_conc', grass: 'gpg_conc', mugwort: 'mpg_conc', alder: 'apg_conc'};
 const daily = {};
 for (const [plant, name] of Object.entries(series)) {
   const variable = variables[name];

@@ -18,7 +18,7 @@ def main():
     # The full 96-hour run is documented as available by 10:00 UTC.
     run_date = (now - timedelta(days=now.hour < 10)).date().isoformat()
     request = {
-        "variable": ["birch_pollen", "grass_pollen", "mugwort_pollen"],
+        "variable": ["birch_pollen", "grass_pollen", "mugwort_pollen", "alder_pollen"],
         "model": ["ensemble"],
         "level": ["0"],
         "date": [f"{run_date}/{run_date}"],
