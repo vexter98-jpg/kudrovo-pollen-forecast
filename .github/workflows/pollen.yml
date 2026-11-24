@@ -1,0 +1,38 @@
+name: Update CAMS pollen forecast
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 11 * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pollen-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/configure-pages@v5
+      - run: python -m pip install 'cdsapi>=0.7.7,<0.8'
+      - name: Fetch CAMS forecast
+        env:
+          CAMS_API_TOKEN: ${{ secrets.CAMS_API_TOKEN }}
+        run: |
+          test -n "$CAMS_API_TOKEN" || { echo 'Set the CAMS_API_TOKEN repository secret.'; exit 1; }
+          mkdir -p public
+          python refresh-cams-pollen.py public/forecast.json
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - uses: actions/deploy-pages@v4
+        id: deployment
